@@ -1,37 +1,73 @@
 use std::io;
-use std::io::{Error, ErrorKind};
+//use std::io::{Error, ErrorKind};
 
 fn main() {
 	println!("Enter your first number...");
 	let num1 = get_num_input();
 
-	let operation = {
-		println!("Now pick an operation with +, -, / or * ...");
-		let mut operation = String::new();
-		io::stdin().read_line(&mut operation);
-		operation.chars().nth(0).unwrap()
-	};
+	println!("Now pick an operation with +, -, / or * ...");
+	let operation = get_operation();
 
 	println!("And your second number...");
 	let num2 = get_num_input();
 
-	let result: f32 = calc_result(num1, num2, operation).unwrap();
+	let result: f32 = calc_result(num1, num2, operation);
 	println!("The result is {result}.");
 }
 
 fn get_num_input() -> f32 {
-	let mut string_num = String::new();
-	io::stdin().read_line(&mut string_num);
-
-	string_num.trim().parse::<f32>().unwrap()
+	loop {
+		let mut string_num = String::new();
+		match io::stdin().read_line(&mut string_num) {
+			Ok(_) => {
+				match string_num.trim().parse::<f32>() {
+					Ok(value) => return value,
+					Err(_) => {}
+				}
+			},
+			Err(_) => {}
+		}
+		println!("Invalid number. Try again...");
+	}
 }
 
-fn calc_result(num1: f32, num2: f32, operation: char) -> Result<f32, Error> {
+fn get_operation() -> Operation {
+	loop {
+		let mut operation = String::new();
+		match io::stdin().read_line(&mut operation) {
+			Ok(_) => {
+				match operation.chars().nth(0) {
+					Some(value) => {
+						match value {
+							'+' => return Operation::Add,
+							'-' => return Operation::Subtract,
+							'/' => return Operation::Divide,
+							'*' => return Operation::Multiply,
+							_ => {}
+						}
+					},
+					None => {}
+				}
+			},
+			Err(_) => {}
+		}
+
+		println!("Invalid operation. Try again...");
+	}
+}
+
+enum Operation {
+	Add,
+	Subtract,
+	Divide,
+	Multiply
+}
+
+fn calc_result(num1: f32, num2: f32, operation: Operation) -> f32 {
 	match operation {
-		'+' => Ok(num1 + num2),
-		'-' => Ok(num1 - num2),
-		'/' => Ok(num1 / num2),
-		'*' => Ok(num1 * num2),
-		_ => Err(Error::new(ErrorKind::InvalidInput, "Invalid operation"))
+		Operation::Add => num1 + num2,
+		Operation::Subtract => num1 - num2,
+		Operation::Divide => num1 / num2,
+		Operation::Multiply => num1 * num2
 	}
 }
